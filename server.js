@@ -56,20 +56,8 @@ io.on('connection', (socket) => {
     socket.on('phone_release', (roomID) => {
         socket.to(roomID).emit('pc_trigger', 'up');
     });
-
-      // --- Latency probe relay (phone -> pc -> phone) ---
-  socket.on('latency_probe', (roomID, probeID) => {
-    // forward probe to the OTHER client(s) in the room (usually the PC)
-    socket.to(roomID).emit('latency_probe', probeID);
-  });
-
-  socket.on('latency_probe_reply', (roomID, probeID) => {
-    // forward reply back to the OTHER client(s) in the room (usually the phone)
-    socket.to(roomID).emit('latency_probe_reply', probeID);
-  });
 });
 
 http.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
-
 });
