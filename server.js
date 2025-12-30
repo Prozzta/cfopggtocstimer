@@ -59,10 +59,17 @@ io.on('connection', (socket) => {
     socket.to(roomID).emit('pc_trigger', 'up');
   });
 
-  // 4. Finished time string -> PC types it into csTimer
-  socket.on('phone_time', (roomID, timeString) => {
-    socket.to(roomID).emit('pc_type', timeString);
-  });
+// 4. Finished time (+ optional penalty) -> PC types it into csTimer
+socket.on('phone_time', (roomID, data) => {
+  // Backwards compatible:
+  // - old: "12.34"
+  // - new: { timeString: "12.34", penalty: "ok" | "plus2" | "dnf" }
+  const payload = (typeof data === "string")
+    ? { timeString: data, penalty: "ok" }
+    : data;
+
+  socket.to(roomID).emit('pc_type', payload);
+});
 
   // 5. Latency probe relay (phone -> pc -> phone)
   socket.on('latency_probe', (roomID, probeID) => {
@@ -77,3 +84,4 @@ io.on('connection', (socket) => {
 http.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
