@@ -6,19 +6,15 @@ const io = require('socket.io')(http, {
   cors: { origin: "*" }
 });
 
+// Hostinger requires the app to listen on process.env.PORT
 const PORT = process.env.PORT || 3000;
 
-// Helps you confirm the deployed file is the latest one
-const VERSION = "relay-typing-v1";
-
+// Basic Health Check
 app.get('/', (req, res) => {
   res.send('Relay Server is Running via Express');
 });
 
-app.get('/version', (req, res) => {
-  res.send(VERSION);
-});
-
+// Helper: Generate Room ID
 function generateRoomID() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -29,7 +25,7 @@ function generateRoomID() {
 }
 
 io.on('connection', (socket) => {
-  // 1) Create Room
+  // 1. Create Room
   socket.on('create_room', () => {
     let roomID = generateRoomID();
     while (io.sockets.adapter.rooms.has(roomID)) {
@@ -40,9 +36,10 @@ io.on('connection', (socket) => {
     console.log(`Room created: ${roomID}`);
   });
 
-  // 2) Join Room
+  // 2. Join Room
   socket.on('join_room', (roomID) => {
     const room = io.sockets.adapter.rooms.get(roomID);
+
     if (room && room.size > 0) {
       socket.join(roomID);
       socket.emit('join_success');
@@ -53,7 +50,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 3) Space triggers (start/stop)
+  // 3. Triggers (Space down/up)
   socket.on('phone_touch', (roomID) => {
     socket.to(roomID).emit('pc_trigger', 'down');
   });
@@ -62,20 +59,12 @@ io.on('connection', (socket) => {
     socket.to(roomID).emit('pc_trigger', 'up');
   });
 
-  // 4) Phone sends time (+ optional penalty) -> PC receives as pc_type
-  // data can be:
-  //   "12.34"
-  // or:
-  //   { timeString: "12.34", penalty: "ok" | "plus2" | "dnf" }
-  socket.on('phone_time', (roomID, data) => {
-    const payload = (typeof data === "string")
-      ? { timeString: data, penalty: "ok" }
-      : data;
-
-    socket.to(roomID).emit('pc_type', payload);
+  // 4. Finished time string -> PC types it into csTimer
+  socket.on('phone_time', (roomID, timeString) => {
+    socket.to(roomID).emit('pc_type', timeString);
   });
 
-  // 5) Latency probe relay
+  // 5. Latency probe relay (phone -> pc -> phone)
   socket.on('latency_probe', (roomID, probeID) => {
     socket.to(roomID).emit('latency_probe', probeID);
   });
