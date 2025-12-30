@@ -33,6 +33,7 @@ io.on('connection', (socket) => {
         socket.join(roomID);
         socket.emit('room_created', roomID);
         console.log(`Room created: ${roomID}`);
+        
     });
 
     // 2. Join Room
@@ -56,7 +57,9 @@ io.on('connection', (socket) => {
     socket.on('phone_release', (roomID) => {
         socket.to(roomID).emit('pc_trigger', 'up');
     });
-
+  socket.on('phone_time', (roomID, timeString) => {
+        socket.to(roomID).emit('pc_type', timeString);
+    });
       // --- Latency probe relay (phone -> pc -> phone) ---
   socket.on('latency_probe', (roomID, probeID) => {
     // forward probe to the OTHER client(s) in the room (usually the PC)
@@ -73,3 +76,4 @@ http.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 
 });
+
