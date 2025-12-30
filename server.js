@@ -5,15 +5,12 @@ const io = require('socket.io')(http, {
     cors: { origin: "*" }
 });
 
-// Hostinger requires the app to listen on process.env.PORT
 const PORT = process.env.PORT || 3000;
 
-// Basic Health Check
 app.get('/', (req, res) => {
     res.send('Relay Server is Running via Express');
 });
 
-// Helper: Generate Room ID
 function generateRoomID() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -48,13 +45,23 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 3. Triggers
+    // 3. Triggers (Stackmat Mode)
     socket.on('phone_touch', (roomID) => {
         socket.to(roomID).emit('pc_trigger', 'down');
     });
-
     socket.on('phone_release', (roomID) => {
         socket.to(roomID).emit('pc_trigger', 'up');
+    });
+
+    // 4. Typing Mode (Relay Time & Penalty)
+    socket.on('phone_time', (roomID, data) => {
+        // data = { val: 1234, pen: "plus2" }
+        socket.to(roomID).emit('pc_type', data);
+    });
+
+    // 5. Commands (Delete, etc)
+    socket.on('pc_command', (roomID, command) => {
+        socket.to(roomID).emit('pc_command', command);
     });
 });
 
