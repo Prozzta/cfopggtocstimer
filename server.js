@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
         socket.to(roomID).emit('pc_trigger', 'up');
     });
     socket.on('phone_time', (roomID, data) => {
-  const payload = (typeof data === "string")
+   const payload = (typeof data === "string")
     ? { timeString: data, penalty: "ok" }
     : data;
 
@@ -68,4 +68,5 @@ io.on('connection', (socket) => {
 http.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
+
 
