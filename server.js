@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
         socket.to(roomID).emit('pc_trigger', 'up');
     });
 
-    // ✅ 4. Finished time (+ optional penalty) -> PC receives it
+    // 4. Finished time (+ optional penalty) -> PC receives it
     // Phone will send either:
     //   "12.34"
     // or:
@@ -83,3 +83,4 @@ io.on('connection', (socket) => {
 http.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
+
